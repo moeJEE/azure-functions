@@ -1,0 +1,51 @@
+{
+  "name": "document-processing-function",
+  "version": "1.0.0",
+  "build:json": "copyfiles -e \"**/*.ts\" -u 1 \"**/function.json\" dist/",
+  "scripts": {
+    "build:ts": "tsc",
+    "build:json": "copyfiles -u 0 \"**/function.json\" dist/ && copyfiles host.json local.settings.json package.json dist/",
+    "build": "npm run clean && npm run build:ts && npm run build:json",
+    "start": "func start --script-root dist --typescript --verbose",
+    "watch": "tsc --watch",
+    "clean": "rimraf dist",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "dependencies": {
+    "@azure/ai-text-analytics": "^5.1.0",
+    "@azure/cosmos": "^4.2.0",
+    "@azure/functions": "^3.0.0",
+    "@azure/identity": "^4.5.0",
+    "@azure/ms-rest-js": "^2.7.0",
+    "@azure/storage-blob": "^12.26.0",
+    "abort-controller": "^3.0.0",
+    "axios": "^1.7.9",
+    "busboy": "^1.6.0",
+    "dotenv": "^16.4.7",
+    "formidable": "^2.1.2",
+    "glob": "^11.0.0",
+    "inflight": "^1.0.6",
+    "mime-types": "^2.1.35",
+    "multiparty": "^4.2.3",
+    "parse-multipart": "^1.0.4",
+    "streamifier": "^0.1.1",
+    "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "@azure/cognitiveservices-computervision": "^8.2.0",
+    "@types/busboy": "^1.5.4",
+    "@types/formidable": "^3.4.5",
+    "@types/mime-types": "^2.1.4",
+    "@types/multiparty": "^4.2.1",
+    "@types/node": "^22.10.2",
+    "@types/parse-multipart": "^1.0.2",
+    "@types/streamifier": "^0.1.2",
+    "copyfiles": "^2.4.1",
+    "cpx": "^1.5.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.7.2"
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "keywords": []
+}
