@@ -43,7 +43,7 @@ jobs:
       - name: Zip Function App
         run: |
           cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          zip -r ../function-app.zip . -x "*.git*" "*.github*"
+          zip -r ../function-app.zip . -x "*.git*" "*.github*" "*.vscode*" "*.DS_Store*"
 
       - name: Upload Deployment Package
         uses: actions/upload-artifact@v4
