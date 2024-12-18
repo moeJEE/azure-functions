@@ -1,4 +1,4 @@
-name: Build and deploy Node.js project to Azure Function App - docprocessingfunc
+name: Build and Deploy Node.js Project to Azure Function App - docprocessingfunc
 
 on:
   push:
@@ -7,70 +7,61 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_NAME: 'docprocessingfunc' # Your Function App name
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'       # Path to your Function App project
-  NODE_VERSION: '20.x'                       # Node.js version
+  AZURE_FUNCTIONAPP_NAME: 'docprocessingfunc'       # Your Azure Function App name
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'             # Path to your Function App project
+  NODE_VERSION: '20.x'                             # Node.js version
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Step 2: Setup Node.js environment
       - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      # Step 3: Install dependencies
       - name: Install Dependencies
         run: |
           cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           npm install
 
-      # Step 4: Build the project (if applicable)
       - name: Build Project
         run: |
           cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           npm run build --if-present
 
-      # Step 5: Run tests (optional)
       - name: Run Tests
         run: |
           cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           npm run test --if-present
 
-      # Step 6: Zip the Function App
       - name: Zip Function App
         run: |
           cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           zip -r ../function-app.zip . -x "*.git*" "*.github*"
 
-      # Step 7: Upload artifact for deployment
       - name: Upload Deployment Package
         uses: actions/upload-artifact@v4
         with:
-          name: function-app
-          path: function-app.zip
+          name: function-app          # Consistent artifact name
+          path: function-app.zip       # Path to the zipped package
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-      # Step 1: Download the deployment package
       - name: Download Deployment Package
         uses: actions/download-artifact@v4
         with:
-          name: function-app
-          path: .
+          name: function-app          # Must match the upload artifact name
+          path: ./                     # Destination path
 
-      # Step 2: Deploy to Azure Function App
       - name: Deploy to Azure Function App
         uses: Azure/functions-action@v1
         with:
