@@ -1,4 +1,11 @@
-name: Build and Deploy Node.js Project to Azure Function App - docprocessingfunc
+Workflow Configuration
+File path: .github/workflows/main_docprocessingfunc.yml
+
+If an existing workflow configuration exists, it will be overwritten.
+# Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy Node.js project to Azure Function App - docprocessingfunc
 
 on:
   push:
@@ -7,64 +14,52 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_NAME: 'docprocessingfunc'       # Your Azure Function App name
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'             # Path to your Function App project
-  NODE_VERSION: '20.x'                             # Node.js version
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
+  NODE_VERSION: '20.x' # set this to the node version to use (supports 8.x, 10.x, 12.x)
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: windows-latest
     steps:
-      - name: Checkout Repository
+      - name: 'Checkout GitHub Action'
         uses: actions/checkout@v4
 
-      - name: Setup Node.js ${{ env.NODE_VERSION }}
+      - name: Setup Node ${{ env.NODE_VERSION }} Environment
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
 
-      - name: Install Dependencies
+      - name: 'Resolve Project Dependencies Using Npm'
+        shell: pwsh
         run: |
-          cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
           npm install
-
-      - name: Build Project
-        run: |
-          cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           npm run build --if-present
-
-      - name: Run Tests
-        run: |
-          cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           npm run test --if-present
+          popd
 
-      - name: Zip Function App
-        run: |
-          cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          zip -r ../function-app.zip . -x "*.git*" "*.github*"
-
-      - name: Upload Deployment Package
+      - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: function-app          # Consistent artifact name
-          path: function-app.zip       # Path to the zipped package
+          name: node-app
+          path: .
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
-
+    
+    
     steps:
-      - name: Download Deployment Package
+      - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: function-app          # Must match the upload artifact name
-          path: ./                     # Destination path
-
-      - name: Deploy to Azure Function App
+          name: node-app
+      
+      - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
+        id: fa
         with:
-          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          package: ./function-app.zip
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          app-name: 'docprocessingfunc'
+          slot-name: 'Production'
+          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          publish-profile: ${{ secrets.AzureAppService_PublishProfile_4bcced712d8e41b0b353b9d01a1b4d29 }}
