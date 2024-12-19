@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_NAME: 'docprocessingfunc'
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'
-  NODE_VERSION: '20.x'
+  AZURE_FUNCTIONAPP_NAME: 'docprocessingfunc'       # Your Azure Function App name
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'             # Path to your Function App project
+  NODE_VERSION: '20.x'                             # Node.js version
 
 jobs:
   build:
@@ -45,17 +45,17 @@ jobs:
 
       - name: Zip Function App
         run: |
-          cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          zip -r function-app.zip . -x "*.git*" "*.github*"
+          cd dist
+          zip -r ../function-app.zip . -x "*.git*" "*.github*"
 
       - name: Debug Zip File
         run: ls -la function-app.zip  # Ensure the zip file exists
 
       - name: Upload Deployment Package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3                  # Downgraded to v3 for GHES
         with:
-          name: function-app
-          path: ./function-app.zip
+          name: function-app                                # Consistent artifact name
+          path: ./function-app.zip                         # Path to the zipped package
 
   deploy:
     runs-on: ubuntu-latest
@@ -63,14 +63,14 @@ jobs:
 
     steps:
       - name: Download Deployment Package
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3                # Downgraded to v3 for GHES
         with:
-          name: function-app
-          path: ./
+          name: function-app                                # Must match the upload artifact name
+          path: ./                                          # Destination path
 
       - name: Deploy to Azure Function App
         uses: Azure/functions-action@v1
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          package: ./function-app.zip
+          package: ./function-app.zip                      # Point to the correct zip file
           publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
