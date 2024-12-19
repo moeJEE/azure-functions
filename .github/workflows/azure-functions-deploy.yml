@@ -13,7 +13,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest                         # Use ubuntu-latest for better compatibility
 
     steps:
       - name: Checkout Repository
