@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_NAME: 'docprocessingfunc'       # Your Azure Function App name
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'             # Path to your Function App project
-  NODE_VERSION: '20.x'                             # Node.js version
+  AZURE_FUNCTIONAPP_NAME: 'docprocessingfunc'
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'
+  NODE_VERSION: '20.x'
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js ${{ env.NODE_VERSION }}
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -40,16 +40,22 @@ jobs:
           cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           npm run test --if-present
 
+      - name: Debug Build Output
+        run: ls -R .  # Check all files generated in the build process
+
       - name: Zip Function App
         run: |
           cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          zip -r ../function-app.zip . -x "*.git*" "*.github*" "*.vscode*" "*.DS_Store*"
+          zip -r function-app.zip . -x "*.git*" "*.github*"
+
+      - name: Debug Zip File
+        run: ls -la function-app.zip  # Ensure the zip file exists
 
       - name: Upload Deployment Package
         uses: actions/upload-artifact@v4
         with:
-          name: function-app          # Consistent artifact name
-          path: function-app.zip       # Path to the zipped package
+          name: function-app
+          path: ./function-app.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -59,8 +65,8 @@ jobs:
       - name: Download Deployment Package
         uses: actions/download-artifact@v4
         with:
-          name: function-app          # Must match the upload artifact name
-          path: ./                     # Destination path
+          name: function-app
+          path: ./
 
       - name: Deploy to Azure Function App
         uses: Azure/functions-action@v1
